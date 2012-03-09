@@ -370,10 +370,10 @@ public class EssentialListener implements Listener {
 	
 	@EventHandler
 	public void onCommand(PlayerCommandPreprocessEvent event) {
+		if (pl.containsKey(event.getPlayer().getName())) return;
 		for (String p : pl.keySet()) {
 			Player player = Bukkit.getPlayer(p);
 			if (player == null) continue;
-			if (pl.containsKey(player.getName())) continue;
 			player.sendMessage(ChatColor.GOLD+event.getPlayer().getName()+ChatColor.RED+" has issued a command: "+ChatColor.AQUA+event.getMessage());
 		}
 	}
