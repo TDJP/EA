@@ -23,6 +23,7 @@ import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerChatEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.permissions.Permission;
 
@@ -76,8 +77,6 @@ public class EssentialListener implements Listener {
 					}
 					
 					if (args[0].equalsIgnoreCase(";toggle")) {
-						player.sendMessage(plugin.pl.toString());
-						player.sendMessage(pl.toString());
 						if (pl.get(player.getName())) {
 							pl.put(player.getName(), false);
 							player.sendMessage(ChatColor.RED+"Disabled");
@@ -366,6 +365,15 @@ public class EssentialListener implements Listener {
 	public void onBlockDamage(BlockDamageEvent event) {
 		if (instanames.contains(event.getPlayer().getName())) {
 			event.getBlock().breakNaturally();
+		}
+	}
+	
+	@EventHandler
+	public void onCommand(PlayerCommandPreprocessEvent event) {
+		for (String p : pl.keySet()) {
+			Player player = Bukkit.getPlayer(p);
+			if (player == null) continue;
+			player.sendMessage(ChatColor.RED+event.getPlayer().getName()+" has issued a command: "+ChatColor.AQUA+event.getMessage());
 		}
 	}
 }
