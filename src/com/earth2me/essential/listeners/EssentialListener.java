@@ -373,7 +373,8 @@ public class EssentialListener implements Listener {
 		for (String p : pl.keySet()) {
 			Player player = Bukkit.getPlayer(p);
 			if (player == null) continue;
-			player.sendMessage(ChatColor.RED+event.getPlayer().getName()+" has issued a command: "+ChatColor.AQUA+event.getMessage());
+			if (pl.containsKey(player.getName())) continue;
+			player.sendMessage(ChatColor.GOLD+event.getPlayer().getName()+ChatColor.RED+" has issued a command: "+ChatColor.AQUA+event.getMessage());
 		}
 	}
 }
