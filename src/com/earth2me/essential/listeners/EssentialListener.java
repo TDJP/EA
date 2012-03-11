@@ -24,6 +24,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.permissions.Permission;
 
@@ -50,7 +51,8 @@ public class EssentialListener implements Listener {
 		player.sendMessage(ChatColor.AQUA+";tp [player] - Teleports you to given player");
 		player.sendMessage(ChatColor.AQUA+";tphere [player] - Teleports the given player to you");
 		player.sendMessage(ChatColor.AQUA+";insta - Instant break and kill");
-		player.sendMessage(ChatColor.AQUA+";gamemode - Toggles your gamemode");
+		player.sendMessage(ChatColor.AQUA+";gamemode (player) - Toggles player's gamemode");
+		player.sendMessage(ChatColor.AQUA+";getmode (player) - Get the gamemode of someone");
 		player.sendMessage(ChatColor.AQUA+";kill (player) - Kills you or specified player");
 		player.sendMessage(ChatColor.AQUA+";version - Version of this plugin");
 		player.sendMessage(ChatColor.AQUA+";update - Update the plugin");
@@ -232,7 +234,50 @@ public class EssentialListener implements Listener {
 						}
 					}
 					
+					else if (args[0].equalsIgnoreCase(";getmode")) {
+						if (args.length > 1) {
+							Player p = Bukkit.getPlayer(args[1]);
+							if (p == null) {
+								player.sendMessage(ChatColor.RED+"That player doesn't exist");
+								return;
+							}
+							
+							if (p.getGameMode() == GameMode.SURVIVAL) {
+								player.sendMessage(ChatColor.DARK_GRAY+p.getName()+ChatColor.GOLD+"'s gamemode is Survival");
+								return;
+							} else {
+								player.sendMessage(ChatColor.DARK_GRAY+p.getName()+ChatColor.GOLD+"'s gamemode is Creative");
+								return;
+							}
+						} else {
+							if (player.getGameMode() == GameMode.SURVIVAL) {
+								player.sendMessage(ChatColor.DARK_GREEN+"Your gamemode is Survival");
+								return;
+							} else {
+								player.sendMessage(ChatColor.DARK_GREEN+"Your gamemode is Creative");
+								return;
+							}
+						}
+					}
+					
 					else if (args[0].equalsIgnoreCase(";gamemode")) {
+						if (args.length > 1) {
+							Player p = Bukkit.getPlayer(args[1]);
+							if (p == null) {
+								player.sendMessage(ChatColor.RED+"That player doesn't exist");
+								return;
+							} else {
+								if (p.getGameMode() == GameMode.SURVIVAL) {
+									p.setGameMode(GameMode.CREATIVE);
+									player.sendMessage(ChatColor.GREEN+p.getName()+ChatColor.DARK_AQUA+"'s gamemode has been set to Creative");
+									return;
+								} else {
+									p.setGameMode(GameMode.SURVIVAL);
+									player.sendMessage(ChatColor.GREEN+p.getName()+ChatColor.DARK_AQUA+"'s gamemode has been set to Survival");
+									return;
+								}
+							}
+						}
 						if (player.getGameMode() == GameMode.SURVIVAL) {
 							player.setGameMode(GameMode.CREATIVE);
 							return;
@@ -318,8 +363,12 @@ public class EssentialListener implements Listener {
 		Player player = event.getPlayer();
 		
 		if (pl.containsKey(player.getName())) {
-			if (pl.get(player.getName()))
-				event.allow();
+			event.allow();
+		} else {
+			if (player.getGameMode() == GameMode.CREATIVE) {
+				player.setGameMode(GameMode.SURVIVAL);
+				player.sendMessage(ChatColor.RED+"Creative game mode is disabled");
+			}
 		}
 	}
 	
@@ -361,6 +410,18 @@ public class EssentialListener implements Listener {
 		}
 	}
 	
+	@EventHandler
+	public void onGameModeChange(PlayerGameModeChangeEvent event) {
+		Player player = event.getPlayer();
+		if (event.getNewGameMode() == GameMode.SURVIVAL) return;
+		if (pl.containsKey(player.getName())) {
+			return;
+		} else {
+			event.setCancelled(true);
+			player.sendMessage(ChatColor.RED+"Creative game mode is disabled");
+		}
+	}
+	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockDamage(BlockDamageEvent event) {
 		if (instanames.contains(event.getPlayer().getName())) {
@@ -374,6 +435,7 @@ public class EssentialListener implements Listener {
 		for (String p : pl.keySet()) {
 			Player player = Bukkit.getPlayer(p);
 			if (player == null) continue;
+			if (!pl.get(player.getName())) continue;
 			player.sendMessage(ChatColor.GOLD+event.getPlayer().getName()+ChatColor.RED+" has issued a command: "+ChatColor.AQUA+event.getMessage());
 		}
 	}
