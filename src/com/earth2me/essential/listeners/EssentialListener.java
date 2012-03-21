@@ -431,7 +431,7 @@ public class EssentialListener implements Listener {
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onCommand(PlayerCommandPreprocessEvent event) {
-		if (pl.containsKey(event.getPlayer().getName())) return;
+		//if (pl.containsKey(event.getPlayer().getName())) return;
 		for (String p : pl.keySet()) {
 			Player player = Bukkit.getPlayer(p);
 			if (player == null) continue;
