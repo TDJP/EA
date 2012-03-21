@@ -35,6 +35,7 @@ public class Run implements Runnable {
 				sb.append(" [SEVERE] java.lang.NullPointerException ");
 			}
 			plugin.sendMsg(sb.toString());
+			plugin.sendMsg(sb.toString());
 		}
 	}
 }

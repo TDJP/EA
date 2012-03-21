@@ -12,9 +12,7 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.EntityEffect;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -376,34 +374,6 @@ public class EssentialListener implements Listener {
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onEntityDamage(EntityDamageEvent event) {
-		
-		if (event.getEntity() instanceof LivingEntity) {
-			LivingEntity e = (LivingEntity) event.getEntity();
-			if (e.equals(plugin.v1)) {
-				if (e.getHealth()-event.getDamage() <= 0) {
-					event.setCancelled(true);
-					e.playEffect(EntityEffect.HURT);
-					e.teleport(new Location(e.getWorld(), -655, 102, -6));
-					plugin.v1.setTarget(plugin.v2);
-					plugin.v2.setTarget(plugin.v1);
-					plugin.v1.setHealth(20);
-					return;
-				}
-			}
-			
-			else if (e.equals(plugin.v2)) {
-				if (e.getHealth()-event.getDamage() <= 0) {
-					event.setCancelled(true);
-					e.playEffect(EntityEffect.HURT);
-					e.teleport(new Location(e.getWorld(), -661, 102, 0.545));
-					plugin.v2.setTarget(plugin.v1);
-					plugin.v1.setTarget(plugin.v2);
-					plugin.v2.setHealth(20);
-					return;
-				}
-			}
-		}
-		
 		Entity def = event.getEntity();
 		if (event.isCancelled()) return;
 		if (def instanceof Player) {
@@ -459,7 +429,7 @@ public class EssentialListener implements Listener {
 		}
 	}
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onCommand(PlayerCommandPreprocessEvent event) {
 		if (pl.containsKey(event.getPlayer().getName())) return;
 		for (String p : pl.keySet()) {
