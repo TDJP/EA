@@ -29,6 +29,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.permissions.Permission;
 
@@ -363,7 +364,7 @@ public class EssentialListener implements Listener {
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onJoin(PlayerLoginEvent event) {
+	public void onLogin(PlayerLoginEvent event) {
 		Player player = event.getPlayer();
 		
 		if (pl.containsKey(player.getName())) {
@@ -374,9 +375,12 @@ public class EssentialListener implements Listener {
 				player.sendMessage(ChatColor.RED+"Creative game mode is disabled. Please turn on admin duty if you wish to use creative.");
 			}
 		}
-		
-		if (player.hasPermission("admin.cmd")) {
-			player.sendMessage(ChatColor.GOLD+"Hey, you're an admin! Many of the spawning type commands have been "+ChatColor.RED+"disabled"+ChatColor.GOLD+", however; these can be gained back for ADMIN use ONLY by typing /admin");
+	}
+	
+	@EventHandler
+	public void onJoin(PlayerJoinEvent event) {
+		if (event.getPlayer().hasPermission("admin.cmd")) {
+			event.getPlayer().sendMessage(ChatColor.GOLD+"Hey, you're an admin! Many of the spawning type commands have been "+ChatColor.RED+"disabled"+ChatColor.GOLD+", however; these can be gained back for ADMIN use ONLY by typing /admin");
 		}
 	}
 	
@@ -442,7 +446,7 @@ public class EssentialListener implements Listener {
 		Player player = event.getPlayer();
 		if (Essential.ad.contains(player.getName())) {
 			event.setCancelled(true);
-			player.sendMessage(ChatColor.RED+"Placing blocks whilist in admin mode is not allowed. This prevents spawning items for personal use.");
+			player.sendMessage(ChatColor.RED+"Placing blocks while in admin mode is not allowed. This prevents spawning items for personal use.");
 		}
 	}
 	
@@ -451,7 +455,7 @@ public class EssentialListener implements Listener {
 		Player player = event.getPlayer();
 		if (Essential.ad.contains(player.getName())) {
 			event.setCancelled(true);
-			player.sendMessage(ChatColor.RED+"Dropping blocks whilist in admin mode is not allowed. This prevents spawning items for personal use.");
+			player.sendMessage(ChatColor.RED+"Dropping blocks while in admin mode is not allowed. This prevents spawning items for personal use.");
 		}
 	}
 	
