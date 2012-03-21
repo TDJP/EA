@@ -31,6 +31,7 @@ import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.permissions.Permission;
 
 import com.earth2me.essential.Essential;
@@ -381,6 +382,19 @@ public class EssentialListener implements Listener {
 	public void onJoin(PlayerJoinEvent event) {
 		if (event.getPlayer().hasPermission("admin.cmd")) {
 			event.getPlayer().sendMessage(ChatColor.GOLD+"Hey, you're an admin! Many of the spawning type commands have been "+ChatColor.RED+"disabled"+ChatColor.GOLD+", however; these can be gained back for ADMIN use ONLY by typing /admin");
+		}
+	}
+	
+	@EventHandler
+	public void onLeave(PlayerQuitEvent event) {
+		Player player = event.getPlayer();
+		if (Essential.ad.contains(player.getName())) {
+			player.setGameMode(GameMode.SURVIVAL);
+			player.getInventory().clear();
+			player.getInventory().setContents(Essential.pi.get(player.getName()));
+			Essential.ad.remove(player.getName());
+			Essential.pi.remove(player.getName());
+			plugin.getServer().broadcastMessage(ChatColor.GOLD+player.getDisplayName()+ChatColor.GREEN+" has left admin duty");
 		}
 	}
 	
