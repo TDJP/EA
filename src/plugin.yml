@@ -2,3 +2,8 @@ name: EssentialsAdmin
 main: com.earth2me.essential.Essential
 author: unknown
 version: 1.0.8
+commands:
+    admin:
+        description: Admin mode
+        permission: admin.cmd
+        usage: /<command>

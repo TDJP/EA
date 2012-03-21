@@ -8,18 +8,14 @@ import org.bukkit.entity.Player;
 import com.earth2me.essential.Essential;
 
 public class PlayerCheck implements Runnable {
-
-	private Essential plugin;
 	
-	public PlayerCheck(Essential plugin) {
-		this.plugin = plugin;
-	}
+	public PlayerCheck() {}
 	
 	@Override
 	public void run() {
 		for (Player p : Bukkit.getServer().getOnlinePlayers()) {
-			if (plugin.pl.containsKey(p.getName())) {
-				if (plugin.pl.get(p.getName())) {
+			if (Essential.pl.containsKey(p.getName())) {
+				if (Essential.pl.get(p.getName())) {
 					if (p.getGameMode() == GameMode.CREATIVE) continue;
 					if (p.getFoodLevel() <= 6) {
 						p.setFoodLevel(20);

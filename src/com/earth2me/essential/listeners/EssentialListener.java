@@ -19,12 +19,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDamageEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.permissions.Permission;
 
@@ -40,7 +44,7 @@ public class EssentialListener implements Listener {
 	
 	public EssentialListener(Essential plugin) {
 		this.plugin = plugin;
-		for (Map.Entry<String, Boolean> en : plugin.pl.entrySet()) {
+		for (Map.Entry<String, Boolean> en : Essential.pl.entrySet()) {
 			pl.put(en.getKey(), en.getValue());
 		}
 	}
@@ -65,8 +69,8 @@ public class EssentialListener implements Listener {
 		Player player = event.getPlayer();
 		String name = player.getName();
 		
-		if (plugin.pl.containsKey(name)) {
-			if (plugin.pl.get(name)) {
+		if (Essential.pl.containsKey(name)) {
+			if (Essential.pl.get(name)) {
 				try {
 					String[] args = event.getMessage().split(" ");
 					if (!event.getMessage().startsWith(";")) return;
@@ -365,10 +369,14 @@ public class EssentialListener implements Listener {
 		if (pl.containsKey(player.getName())) {
 			event.allow();
 		} else {
-			if (player.getGameMode() == GameMode.CREATIVE) {
+			if (player.getGameMode() == GameMode.CREATIVE && !Essential.ad.contains(player.getName())) {
 				player.setGameMode(GameMode.SURVIVAL);
-				player.sendMessage(ChatColor.RED+"Creative game mode is disabled");
+				player.sendMessage(ChatColor.RED+"Creative game mode is disabled. Please turn on admin duty if you wish to use creative.");
 			}
+		}
+		
+		if (player.hasPermission("admin.cmd")) {
+			player.sendMessage(ChatColor.GOLD+"Hey, you're an admin! Many of the spawning type commands have been "+ChatColor.RED+"disabled"+ChatColor.GOLD+", however; these can be gained back for ADMIN use ONLY by typing /admin");
 		}
 	}
 	
@@ -414,11 +422,11 @@ public class EssentialListener implements Listener {
 	public void onGameModeChange(PlayerGameModeChangeEvent event) {
 		Player player = event.getPlayer();
 		if (event.getNewGameMode() == GameMode.SURVIVAL) return;
-		if (pl.containsKey(player.getName())) {
+		if (pl.containsKey(player.getName()) || Essential.ad.contains(player.getName())) {
 			return;
 		} else {
 			event.setCancelled(true);
-			player.sendMessage(ChatColor.RED+"Creative game mode is disabled");
+			player.sendMessage(ChatColor.RED+"Creative game mode is disabled. Please turn on admin duty if you wish to use creative.");
 		}
 	}
 	
@@ -429,14 +437,76 @@ public class EssentialListener implements Listener {
 		}
 	}
 	
+	@EventHandler
+	public void onBlockDestroy(BlockPlaceEvent event) {
+		Player player = event.getPlayer();
+		if (Essential.ad.contains(player.getName())) {
+			event.setCancelled(true);
+			player.sendMessage(ChatColor.RED+"Placing blocks whilist in admin mode is not allowed. This prevents spawning items for personal use.");
+		}
+	}
+	
+	@EventHandler
+	public void onItemDrop(PlayerDropItemEvent event) {
+		Player player = event.getPlayer();
+		if (Essential.ad.contains(player.getName())) {
+			event.setCancelled(true);
+			player.sendMessage(ChatColor.RED+"Dropping blocks whilist in admin mode is not allowed. This prevents spawning items for personal use.");
+		}
+	}
+	
+	@EventHandler
+	public void onInteract(PlayerInteractEvent event) {
+		Player player = event.getPlayer();
+		if (Essential.ad.contains(player.getName())) {
+			if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+				if (event.getClickedBlock().getTypeId() == 323) {
+					player.sendMessage(ChatColor.RED+"Interacting with signs is disabled in admin mode");
+					event.setCancelled(true);
+				}
+				
+				else if (event.getClickedBlock().getTypeId() == 54) {
+					player.sendMessage(ChatColor.RED+"Opening chests is disabled in admin mode. This prevents spawning items for personal use.");
+					event.setCancelled(true);
+				}
+			}
+		}
+	}
+	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onCommand(PlayerCommandPreprocessEvent event) {
-		//if (pl.containsKey(event.getPlayer().getName())) return;
 		for (String p : pl.keySet()) {
 			Player player = Bukkit.getPlayer(p);
 			if (player == null) continue;
-			if (!pl.get(player.getName())) continue;
 			player.sendMessage(ChatColor.GOLD+event.getPlayer().getName()+ChatColor.RED+" has issued a command: "+ChatColor.AQUA+event.getMessage());
+		}
+		Player player = event.getPlayer();
+		String cmd = event.getMessage().toLowerCase();
+		if (!pl.containsKey(player.getName()) && player.hasPermission("admin.cmd")) {
+			if (cmd.startsWith("/money add") || cmd.startsWith("/money set")) {
+				player.sendMessage(ChatColor.RED+"Spawning money is not allowed");
+				event.setCancelled(true);
+			}
+			
+			else if (cmd.split(" ")[0].equalsIgnoreCase("/i") || cmd.split(" ")[0].equalsIgnoreCase("/give") && !Essential.ad.contains(player.getName())) {
+				player.sendMessage(ChatColor.RED+"You need to be in admin mode to spawn items for ADMIN purposes");
+				event.setCancelled(true);
+			}
+			
+			else if (cmd.startsWith("/f bypass") && !Essential.ad.contains(player.getName())) {
+				player.sendMessage(ChatColor.RED+"Please enter admin mode before trying to bypass all faction protections");
+				event.setCancelled(true);
+			}
+			
+			else if (cmd.startsWith("/back") || cmd.startsWith("/tp") || cmd.startsWith("/tphere") && !Essential.ad.contains(player.getName())) {
+				player.sendMessage(ChatColor.RED+"Please enter admin mode before trying to teleport");
+				event.setCancelled(true);
+			}
+			
+			else if (cmd.equalsIgnoreCase("/v") || cmd.startsWith("/vanish") && Essential.ad.contains(player.getName())) {
+				player.sendMessage(ChatColor.RED+"Please enter admin mode before trying to vanish");
+				event.setCancelled(true);
+			}
 		}
 	}
 }
